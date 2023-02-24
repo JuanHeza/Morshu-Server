@@ -1,47 +1,75 @@
-package main
+package database
 
-import(
-    "log"
-    "fmt"
-    "context"
+import (
+	"context"
 	"encoding/json"
+	"fmt"
+	"log"
+	"net/http"
+	"os"
+
+	"github.com/gorilla/sessions"
+
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type MongoClient struct{
-    user, password string
-    collection []string
+type MongoClient struct {
+	user, password string
+	collection     []string
 }
 
-var(
-    user = MongoClient{}
-    client *mongo.Client
+var (
+	user   = MongoClient{}
+	client *mongo.Client
+	Store  = sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
 )
 
-func (this *MongoClient)connect(uri string)(client *mongo.Client){
-   // user, password, cluster string
-    client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
+func getSession(r *http.Request, search string) string {
+	session, _ := Store.Get(r, "session-name")
+
+	return fmt.Sprintf("%v", session.Values[search])
+}
+func SetSession(w http.ResponseWriter, r *http.Request) (err error) {
+	session, _ := Store.Get(r, "session-name")
+	session.Values["database"] = os.Getenv("TEST_DATABASE")
+	session.Values["collection"] = os.Getenv("TEST_COLLECTION")
+	session.Values["user"] = os.Getenv("TEST_USER")
+	err = session.Save(r, w)
+	return
+}
+
+func (mc *MongoClient) connect(uri string) (client *mongo.Client) {
+	// user, password, cluster string
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
 	if err != nil {
 		panic(err)
 	}
-    return 
+	return
+}
+func Disconnect() (err error) {
+	err = client.Disconnect(context.TODO())
+	return
 }
 
-func search(database, collection string){
-    if(client == nil){
-        user.connect()
-    }
-	defer func() {
+func GetCollection(r *http.Request) (coll *mongo.Collection) {
+	if client == nil {
+		client = user.connect(os.Getenv("MONGODB_URI"))
+	}
+	/*defer func() {
 		if err := client.Disconnect(context.TODO()); err != nil {
 			panic(err)
 		}
-	}()
-	coll := client.Database(database).Collection(collection)
+	}()*/
+	database := getSession(r, "database")
+	collection := getSession(r, "collection")
+	coll = client.Database(database).Collection(collection)
+	return
 }
-func MongoConection(uri string){
+
+func MongoConection(uri string) {
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found")
 	}
@@ -75,6 +103,7 @@ func MongoConection(uri string){
 	}
 	fmt.Printf("%s\n", jsonData)
 }
+
 /*
 import "go.mongodb.org/mongo-driver/mongo"
 serverAPIOptions := options.ServerAPI(options.ServerAPIVersion1)
