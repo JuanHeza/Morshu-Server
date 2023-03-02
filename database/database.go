@@ -2,35 +2,22 @@ package database
 
 import (
 	dt "EvilPanda/util/dataType"
-	us "EvilPanda/services/user/models"
 	"context"
-	"encoding/json"
-	"fmt"
+	_ "encoding/json"
+	_ "fmt"
 	"log"
-	"net/http"
-	"os"
+	_ "net/http"
+	_ "os"
 
-	"github.com/gorilla/sessions"
+	_ "github.com/gorilla/sessions"
 
-	"github.com/joho/godotenv"
+	_ "github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var (
-//	user   = MongoClient{}
-//	client *mongo.Client
-//	Store  = sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
-)
 /*
-
-type MongoClient struct {
-	user, password string
-	collection     []string
-}
-
-
 func LoggedIn(r *http.Request) (actual us.User) {
 	session, _ := Store.Get(r, "session-name")
 	actual.UserLevel = session.Values["userlevel"].(dt.UserLevel)
@@ -58,43 +45,7 @@ func SetSession(w http.ResponseWriter, r *http.Request) (err error) {
 	return
 }
 
-func (mc *MongoClient) connect(uri string) (client *mongo.Client) {
-	// user, password, cluster string
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
-	if err != nil {
-		panic(err)
-	}
-	return
-}
-func Disconnect() (err error) {
-	err = client.Disconnect(context.TODO())
-	client = nil
-	return
-}
-
-func GetCollection(r *http.Request) (coll *mongo.Collection) {
-	if client == nil {
-		client = user.connect(os.Getenv("MONGODB_URI"))
-	}
-	// defer func() {
-	// 	if err := client.Disconnect(context.TODO()); err != nil {
-	// 		panic(err)
-	// 	}
-	// }()
-	database := getSession(r, "database")
-	collection := getSession(r, "collection")
-	coll = client.Database(database).Collection(collection)
-	return
-}
-
 func MongoConection(uri string) {
-	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found")
-	}
-	//uri := os.Getenv("MONGODB_URI")
-	if uri == "" {
-		log.Fatal("You must set your 'MONGODB_URI' environmental variable. See\n\t https://www.mongodb.com/docs/drivers/go/current/usage-examples/#environment-variable")
-	}
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
 	if err != nil {
 		panic(err)
@@ -121,7 +72,6 @@ func MongoConection(uri string) {
 	}
 	fmt.Printf("%s\n", jsonData)
 }
-
 */
 func BuildCriteria(criteria []dt.Criteria) (multi bson.M) {
 	//var one interface{}
@@ -134,6 +84,102 @@ func BuildCriteria(criteria []dt.Criteria) (multi bson.M) {
 		}
 	}
 	return
+}
+func Find(criteria bson.M, collection string, output interface{}) (interface{}, error) {
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(dt.Mongo_uri))
+	defer func() {
+		if err := client.Disconnect(context.TODO()); err != nil {
+			panic(err)
+		}
+	}()
+	coll := client.Database(dt.Database_Name).Collection(collection)
+	cursor, err := coll.Find(context.TODO(), criteria)
+	if err != nil {
+		return nil, err
+	}
+	if err = cursor.All(context.TODO(), &output); err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
+	return output, nil
+}
+
+func FindOne(criteria bson.M, collection string, output interface{}) (interface{}, error) {
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(dt.Mongo_uri))
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if err := client.Disconnect(context.TODO()); err != nil {
+			panic(err)
+		}
+	}()
+	coll := client.Database(dt.Database_Name).Collection(collection)
+	err = coll.FindOne(context.TODO(), criteria).Decode(&output)
+	if err != nil {
+		return nil, err
+	}
+	return output, nil
+}
+
+func FindOneAndReplace(criteria bson.M, collection string, output interface{}) (interface{}, error) {
+	return output, nil
+}
+func FindOneAndUpdate(criteria bson.M, collection string, output interface{}) (interface{}, error) {
+	return output, nil
+}
+func FindOneAndDelete(criteria bson.M, collection string, output interface{}) (interface{}, error) {
+	return output, nil
+}
+func DeleteOne(criteria bson.M, collection string, output interface{}) (interface{}, error) {
+	return output, nil
+}
+func DeleteMany(criteria bson.M, collection string, output interface{}) (interface{}, error) {
+	return output, nil
+}
+func InsertOne(criteria bson.M, collection string, insert interface{}) (interface{}, error) {
+
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(dt.Mongo_uri))
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if err = client.Disconnect(context.TODO()); err != nil {
+			panic(err)
+		}
+	}()
+
+	// begin insertOne
+	coll := client.Database(dt.Database_Name).Collection(collection)
+	result, err := coll.InsertOne(context.TODO(), insert)
+	if err != nil {
+		//panic(err)
+		return nil, err
+	}
+
+	log.Printf("Document inserted with ID: %s\n", result.InsertedID)
+	return result, nil
+}
+func InsertMany(criteria bson.M, collection string, output interface{}) (interface{}, error) {
+	return output, nil
+}
+func ReplaceOne(criteria bson.M, collection string, output interface{}) (interface{}, error) {
+	return output, nil
+}
+func UpdateById(criteria bson.M, collection string, output interface{}) (interface{}, error) {
+	return output, nil
+}
+func UpdateOne(criteria bson.M, collection string, output interface{}) (interface{}, error) {
+	return output, nil
+}
+func UpdateMany(criteria bson.M, collection string, output interface{}) (interface{}, error) {
+	return output, nil
+}
+func Aggregate(criteria bson.M, collection string, output interface{}) (interface{}, error) {
+	return output, nil
+}
+func Distinct(criteria bson.M, collection string, output interface{}) (interface{}, error) {
+	return output, nil
 }
 
 //

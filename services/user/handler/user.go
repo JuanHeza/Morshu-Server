@@ -4,15 +4,14 @@ import (
 	// "EvilPanda/database"
 
 	"EvilPanda/services/user/model"
-	usdb "EvilPanda/services/user/database"
 	dt "EvilPanda/util/dataType"
 	"encoding/json"
 	"io/ioutil"
 
 	// "EvilPanda/util"
+	"errors"
 	_ "log"
 	"net/http"
-    "errors"
 )
 
 /*
@@ -37,19 +36,19 @@ func LogIn(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-    userModel = user.(model.User)
-    usdb.Search(&userModel)
-	if  userModel.UserLevel != dt.Invalid_level{
-        
-        data, err := json.Marshal(user)
-        
-    	if err != nil {
-    		http.Error(w, err.Error(), http.StatusInternalServerError)
-    	}
-        if len(data) != 0 {
-    		w.Write(data)
-    	}
-    }
+	userModel = user.(model.User)
+	userModel.Search()
+	if userModel.UserLevel != dt.Invalid_level {
+
+		data, err := json.Marshal(user)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		if len(data) != 0 {
+			w.Write(data)
+		}
+	}
 }
 
 func LogOut(w http.ResponseWriter, r *http.Request) {}
@@ -58,24 +57,24 @@ func checkRequestError(w http.ResponseWriter, r *http.Request, methodAllowed str
 	var mapa map[string]interface{}
 	if r.Method != methodAllowed {
 		http.Error(w, "Bad Method", http.StatusMethodNotAllowed)
-        err = errors.New("Bad Method")
+		err = errors.New("Bad Method")
 		return
 	}
 	reqBody, _ := ioutil.ReadAll(r.Body)
 	if len(reqBody) == 0 {
 		http.Error(w, "No Body", http.StatusBadRequest)
-        err = errors.New("No Body")
+		err = errors.New("No Body")
 		return
 	}
 	json.Unmarshal(reqBody, &mapa)
 	for _, field := range fields {
 		if val, ok := mapa[field]; !ok || val == "" {
 			http.Error(w, "Missing Data", http.StatusBadRequest)
-            err = errors.New("Missing Data")
+			err = errors.New("Missing Data")
 			return
 		}
 	}
 	json.Unmarshal(reqBody, &dataType)
-    data = dataType
+	data = dataType
 	return
 }

@@ -40,7 +40,7 @@ const (
 	Colleccion_tienda   = "stores"
 	Colleccion_usuario  = "users"
 	Colleccion_pedidos  = "orders"
-	Database_Name       = "EvilPanda"
+	Database_Name       = "pruebas"
 )
 var (
     Mongo_uri = os.Getenv("MONGODB_URI")
