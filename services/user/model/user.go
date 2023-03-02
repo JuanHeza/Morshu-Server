@@ -9,10 +9,12 @@ type User struct{
 	UserLevel dataType.UserLevel
 }
 
-func (us *User) SetSession(){}
-func (us *User) GetSession(){}
-func (us *User) Create(){}
-func (us *User) Read(){}
-func (us *User) Update(){}
-func (us *User) Delete(){}
-func (us *User) Search(){}
+func (us *User) SetSession()(){}
+func (us *User) GetSession()(){}
+func (us *User) Create()(){}
+func (us *User) Read()(){}
+func (us *User) Update()(){}
+func (us *User) Delete()(){}
+func (us *User) Search()(found bool){
+    return
+}

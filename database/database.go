@@ -1,6 +1,5 @@
 package database
 
-/*
 import (
 	dt "EvilPanda/util/dataType"
 	us "EvilPanda/services/user/models"
@@ -19,16 +18,18 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+var (
+//	user   = MongoClient{}
+//	client *mongo.Client
+//	Store  = sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
+)
+/*
+
 type MongoClient struct {
 	user, password string
 	collection     []string
 }
 
-var (
-	user   = MongoClient{}
-	client *mongo.Client
-	Store  = sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
-)
 
 func LoggedIn(r *http.Request) (actual us.User) {
 	session, _ := Store.Get(r, "session-name")
@@ -121,6 +122,7 @@ func MongoConection(uri string) {
 	fmt.Printf("%s\n", jsonData)
 }
 
+*/
 func BuildCriteria(criteria []dt.Criteria) (multi bson.M) {
 	//var one interface{}
 	multi = bson.M{}
@@ -147,4 +149,3 @@ func BuildCriteria(criteria []dt.Criteria) (multi bson.M) {
 //     log.Fatal(err)
 // }
 //
-*/

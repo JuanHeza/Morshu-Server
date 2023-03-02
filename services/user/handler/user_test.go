@@ -38,7 +38,6 @@ func TestLogIn(t *testing.T) {
 			}
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(tt.args.method, tt.args.path, bytes.NewReader(user))
-			r.Header.Add("tracing-id", "123")
 			LogIn(w, r)
 			if w.Result().StatusCode != http.StatusOK {
 				res, _ := ioutil.ReadAll(w.Result().Body)

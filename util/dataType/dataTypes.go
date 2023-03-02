@@ -1,11 +1,15 @@
 package dataType
 
+import "os"
 type DataType int64
 type UserLevel int64
-
 const (
-	_ DataType = iota
+	Invalid_type DataType = iota
 	Producto_type
+    User_type
+    Order_type
+    Store_type
+    ClientType
 
 	Criteria_equal       string = "$eq"
 	Criteria_in          string = "$in"
@@ -24,12 +28,22 @@ const (
 	Criteria_text        string = "$text"
 	Criteria_slice       string = "$slice"
 
-	_ UserLevel = iota
+	Invalid_level UserLevel = iota
 	Desarrollador_level
 	Administrador_level
 	Gerente_level
 	Supervisor_level
 	Trabajador_level
+
+	Colleccion_cliente  = "clients"
+	Colleccion_producto = "products"
+	Colleccion_tienda   = "stores"
+	Colleccion_usuario  = "users"
+	Colleccion_pedidos  = "orders"
+	Database_Name       = "EvilPanda"
+)
+var (
+    Mongo_uri = os.Getenv("MONGODB_URI")
 )
 
 type Criteria struct {
@@ -37,4 +51,3 @@ type Criteria struct {
 	Restriction string
 	Value       interface{}
 }
-
