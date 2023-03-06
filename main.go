@@ -3,6 +3,7 @@ package main
 import (
 	// pr "EvilPanda/services/product/handler"
 	user "EvilPanda/services/user/handler"
+	dt "EvilPanda/util/dataType"
 
 	"fmt"
 	"log"
@@ -27,12 +28,14 @@ func main() {
 	log.Fatal(http.ListenAndServe(":8080", router))
 	// https://www.freecodecamp.org/news/how-to-build-a-web-app-with-go-gin-and-react-cffdc473576/
 }
-
+func enableCors(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", dt.Allow_Origin)
+}
 /*
 func middlewareLog(handler http.Handler) http.Handler {
-
 	return http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
+			enableCors(&w)
 			loggedIn := db.LoggedIn(r)
 			if loggedIn.Username != "" {
 				handler.ServeHTTP(w, r)
