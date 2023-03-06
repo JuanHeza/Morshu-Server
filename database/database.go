@@ -70,7 +70,23 @@ func CheckCollectionsExist(){
 		}
 	}
 }
-
+func Connect (criteria bson.M, collection string, fn func(ctx context, criteria bson.M) (interface{}, error)){
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(dt.Mongo_uri))
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if err := client.Disconnect(context.TODO()); err != nil {
+			panic(err)
+		}
+	}()
+	coll := client.Database(dt.Database_Name).Collection(collection)
+	output, err := fn(context.TODO(), criteria);err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
+	return output, nil
+}
 // Find all by criteria
 func Find(criteria bson.M, collection string, output interface{}) (interface{}, error) {
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(dt.Mongo_uri))
