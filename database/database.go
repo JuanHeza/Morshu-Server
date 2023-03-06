@@ -34,6 +34,43 @@ func BuildCriteria(criteria []dt.Criteria) (multi bson.M) {
 	}
 	return
 }
+
+
+func CheckCollectionsExist(){
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(dt.Mongo_uri))
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if err := client.Disconnect(context.TODO()); err != nil {
+			panic(err)
+		}
+	}()
+	db := client.Database(dt.Database_Name)
+	list, err  := db.CollectionNames()
+	if err != nil {
+		// Handle error
+		log.Printf("Failed to get coll names: %v", err)
+		return
+	}
+	for _, collection := range dt.CollectionNames {
+		exist := false
+		for _, existing := range list{
+			if existing == collection{
+				exist = true
+				break
+			}
+		}
+		if !exist {
+			//https://pkg.go.dev/go.mongodb.org/mongo-driver@v1.11.2/mongo#Database.CreateCollection
+			err := db.CreateCollection(context.TODO(), collection)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+	}
+}
+
 // Find all by criteria
 func Find(criteria bson.M, collection string, output interface{}) (interface{}, error) {
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(dt.Mongo_uri))

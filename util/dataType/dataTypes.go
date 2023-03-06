@@ -32,6 +32,7 @@ const (
 	Criteria_regex        = "$regex"
 	Criteria_text         = "$text"
 	Criteria_slice        = "$slice"
+
 	Colleccion_cliente    = "clientes"
 	Colleccion_producto   = "productos"
 	Colleccion_tienda     = "tienda"
@@ -39,6 +40,7 @@ const (
 	Colleccion_pedidos    = "pedidos"
 	Colleccion_inventario = "inventario"
 	Colleccion_ofertas    = "ofertas"
+	
 	Database_Name         = "pruebas"
 )
 
@@ -60,6 +62,8 @@ const (
 var (
 	Mongo_uri = os.Getenv("MONGODB_URI")
 	Allow_Origin = os.Getenv("Allow_Origin")
+	Database = os.Getenv("Database")
+	CollectionNames = []string{Colleccion_cliente, Colleccion_producto, Colleccion_tienda, Colleccion_usuario, Colleccion_pedidos, Colleccion_inventario, Colleccion_ofertas}
 )
 
 type Criteria struct {
