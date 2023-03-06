@@ -3,11 +3,8 @@ package main
 import (
 	// pr "EvilPanda/services/product/handler"
 	user "EvilPanda/services/user/handler"
-	_ "bytes"
-	// "encoding/gob"
+
 	"fmt"
-	_ "image"
-	_ "image/jpeg"
 	"log"
 	"net/http"
 
@@ -16,9 +13,14 @@ import (
 
 func main() {
 	router := mux.NewRouter()
-	/* 	gob.Register(&User{})
-	   	router.HandleFunc("/", web.LogIn).Methods("GET", "OPTIONS") */
-	   	router.HandleFunc("/logIn", user.LogIn).Methods(http.MethodPost)
+	/* 	gob.Register(&User{})*/
+	router.HandleFunc("/", user.Path).Methods(http.MethodGet)
+	router.HandleFunc("/test", user.Test).Methods(http.MethodGet)
+	router.HandleFunc("/logIn", user.LogIn).Methods(http.MethodPost)
+	router.HandleFunc("/logOut", user.LogOut).Methods(http.MethodGet)
+	router.HandleFunc("/user", user.Crud).Methods(http.MethodPost, http.MethodGet, http.MethodDelete, http.MethodPut)
+	router.HandleFunc("/user/multiple", user.Crud).Methods(http.MethodPost, http.MethodGet, http.MethodDelete, http.MethodPut)
+
 	//router.HandleFunc("/", ).Methods("")
 	/* 	router.HandleFunc("/getProducts", pr.GetProducts).Methods("GET", "OPTIONS") */
 	fmt.Println("Server Online")

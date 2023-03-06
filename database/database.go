@@ -17,62 +17,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-/*
-func LoggedIn(r *http.Request) (actual us.User) {
-	session, _ := Store.Get(r, "session-name")
-	actual.UserLevel = session.Values["userlevel"].(dt.UserLevel)
-	actual.Username = fmt.Sprintf("%v", session.Values["username"])
-	return
-}
-func DestroySession(r *http.Request, w http.ResponseWriter) (err error) {
-	session, _ := Store.Get(r, "session-name")
-	session.Options.MaxAge = -1
-	err = session.Save(r, w)
-	return
-}
-func getSession(r *http.Request, search string) string {
-	session, _ := Store.Get(r, "session-name")
-
-	return fmt.Sprintf("%v", session.Values[search])
-}
-func SetSession(w http.ResponseWriter, r *http.Request) (err error) {
-	session, _ := Store.Get(r, "session-name")
-	session.Values["database"] = os.Getenv("TEST_DATABASE")
-	session.Values["collection"] = os.Getenv("TEST_COLLECTION")
-	session.Values["username"] = os.Getenv("TEST_USER")
-	session.Values["userlevel"] = dt.Desarrollador_level
-	err = session.Save(r, w)
-	return
+type GeneralData struct {
+	DataType  dt.DataType `json:"data_type,omitempty" bson:"data_type,omitempty"`
+	Eliminado dt.Status   `json:"eliminado,omitempty" bson:"eliminado,omitempty"`
 }
 
-func MongoConection(uri string) {
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
-	if err != nil {
-		panic(err)
-	}
-	defer func() {
-		if err := client.Disconnect(context.TODO()); err != nil {
-			panic(err)
-		}
-	}()
-	coll := client.Database("sample_mflix").Collection("movies")
-	title := "Back to the Future"
-	var result bson.M
-	err = coll.FindOne(context.TODO(), bson.D{{"title", title}}).Decode(&result)
-	if err == mongo.ErrNoDocuments {
-		fmt.Printf("No document was found with the title %s\n", title)
-		return
-	}
-	if err != nil {
-		panic(err)
-	}
-	jsonData, err := json.MarshalIndent(result, "", "    ")
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("%s\n", jsonData)
-}
-*/
 func BuildCriteria(criteria []dt.Criteria) (multi bson.M) {
 	//var one interface{}
 	multi = bson.M{}
@@ -85,8 +34,12 @@ func BuildCriteria(criteria []dt.Criteria) (multi bson.M) {
 	}
 	return
 }
+// Find all by criteria
 func Find(criteria bson.M, collection string, output interface{}) (interface{}, error) {
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(dt.Mongo_uri))
+	if err != nil {
+		return nil, err
+	}
 	defer func() {
 		if err := client.Disconnect(context.TODO()); err != nil {
 			panic(err)
@@ -104,7 +57,8 @@ func Find(criteria bson.M, collection string, output interface{}) (interface{}, 
 	return output, nil
 }
 
-func FindOne(criteria bson.M, collection string, output interface{}) (interface{}, error) {
+//FindOne by criteria
+func FindOne(criteria bson.M, collection string) (*mongo.SingleResult, error) {
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(dt.Mongo_uri))
 	if err != nil {
 		return nil, err
@@ -115,12 +69,10 @@ func FindOne(criteria bson.M, collection string, output interface{}) (interface{
 		}
 	}()
 	coll := client.Database(dt.Database_Name).Collection(collection)
-	err = coll.FindOne(context.TODO(), criteria).Decode(&output)
-	if err != nil {
-		return nil, err
-	}
+	output := coll.FindOne(context.TODO(), criteria)
 	return output, nil
 }
+
 
 func FindOneAndReplace(criteria bson.M, collection string, output interface{}) (interface{}, error) {
 	return output, nil
@@ -131,13 +83,28 @@ func FindOneAndUpdate(criteria bson.M, collection string, output interface{}) (i
 func FindOneAndDelete(criteria bson.M, collection string, output interface{}) (interface{}, error) {
 	return output, nil
 }
-func DeleteOne(criteria bson.M, collection string, output interface{}) (interface{}, error) {
-	return output, nil
+func DeleteOne(criteria bson.M, collection string) (interface{}, error) {
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(dt.Mongo_uri))
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if err := client.Disconnect(context.TODO()); err != nil {
+			panic(err)
+		}
+	}()
+	coll := client.Database(dt.Database_Name).Collection(collection)
+	result, err := coll.DeleteOne(context.TODO(), criteria)
+	if err != nil {
+		return nil, err
+	}
+	log.Printf("Documents Deleted: %v\n", result.DeletedCount)
+	return result, nil
 }
 func DeleteMany(criteria bson.M, collection string, output interface{}) (interface{}, error) {
 	return output, nil
 }
-func InsertOne(criteria bson.M, collection string, insert interface{}) (interface{}, error) {
+func InsertOne(collection string, insert interface{}) (interface{}, error) {
 
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(dt.Mongo_uri))
 	if err != nil {
@@ -181,17 +148,3 @@ func Aggregate(criteria bson.M, collection string, output interface{}) (interfac
 func Distinct(criteria bson.M, collection string, output interface{}) (interface{}, error) {
 	return output, nil
 }
-
-//
-// import "go.mongodb.org/mongo-driver/mongo"
-// serverAPIOptions := options.ServerAPI(options.ServerAPIVersion1)
-// clientOptions := options.Client().
-//     ApplyURI("MONGO_STRING").
-//     SetServerAPIOptions(serverAPIOptions)
-// ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-// defer cancel()
-// client, err := mongo.Connect(ctx, clientOptions)
-// if err != nil {
-//     log.Fatal(err)
-// }
-//
