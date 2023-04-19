@@ -35,8 +35,7 @@ func BuildCriteria(criteria []dt.Criteria) (multi bson.M) {
 	return
 }
 
-
-func CheckCollectionsExist(){
+func CheckCollectionsExist() (interface{}, error) {
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(dt.Mongo_uri))
 	if err != nil {
 		return nil, err
@@ -47,16 +46,16 @@ func CheckCollectionsExist(){
 		}
 	}()
 	db := client.Database(dt.Database_Name)
-	list, err  := db.CollectionNames()
+	list, err := []string{}, nil //db.CollectionNames()
 	if err != nil {
 		// Handle error
 		log.Printf("Failed to get coll names: %v", err)
-		return
+		return nil, err
 	}
 	for _, collection := range dt.CollectionNames {
 		exist := false
-		for _, existing := range list{
-			if existing == collection{
+		for _, existing := range list {
+			if existing == collection {
 				exist = true
 				break
 			}
@@ -69,8 +68,9 @@ func CheckCollectionsExist(){
 			}
 		}
 	}
+	return true, nil
 }
-func Connect (criteria bson.M, collection string, fn func(ctx context, criteria bson.M) (interface{}, error)){
+func Connect(criteria bson.M, collection string, fn func(ctx context.Context, criteria bson.M) (interface{}, error)) (interface{}, error) {
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(dt.Mongo_uri))
 	if err != nil {
 		return nil, err
@@ -80,13 +80,15 @@ func Connect (criteria bson.M, collection string, fn func(ctx context, criteria 
 			panic(err)
 		}
 	}()
-	coll := client.Database(dt.Database_Name).Collection(collection)
-	output, err := fn(context.TODO(), criteria);err != nil {
+	//coll := client.Database(dt.Database_Name).Collection(collection)
+	output, err := fn(context.TODO(), criteria)
+	if err != nil {
 		log.Fatal(err)
 		return nil, err
 	}
 	return output, nil
 }
+
 // Find all by criteria
 func Find(criteria bson.M, collection string, output interface{}) (interface{}, error) {
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(dt.Mongo_uri))
@@ -110,7 +112,7 @@ func Find(criteria bson.M, collection string, output interface{}) (interface{}, 
 	return output, nil
 }
 
-//FindOne by criteria
+// FindOne by criteria
 func FindOne(criteria bson.M, collection string) (*mongo.SingleResult, error) {
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(dt.Mongo_uri))
 	if err != nil {
@@ -125,7 +127,6 @@ func FindOne(criteria bson.M, collection string) (*mongo.SingleResult, error) {
 	output := coll.FindOne(context.TODO(), criteria)
 	return output, nil
 }
-
 
 func FindOneAndReplace(criteria bson.M, collection string, output interface{}) (interface{}, error) {
 	return output, nil
